@@ -4,7 +4,7 @@ import json
 import os
 from datetime import datetime, timedelta, date
 from PIL import Image
-from fpdf import FPDF
+from fpdf2 import FPDF
 import numpy as np
 
 # --- Configuration and Data Paths ---
