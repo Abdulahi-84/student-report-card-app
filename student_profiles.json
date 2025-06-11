@@ -1,0 +1,32 @@
+[
+    {
+        "student_name": "Adams",
+        "age": 13,
+        "reg_number": "ICY/2025/001",
+        "parent_name": "Agbabiaka",
+        "parent_phone": "08036655555",
+        "parent_address": "12, Odunlade Street",
+        "session": "2024/2025",
+        "term": "First Term"
+    },
+    {
+        "student_name": "Ngozi",
+        "age": 12,
+        "reg_number": "ICY/2025/002",
+        "parent_name": "Mr and Mrs Obasi",
+        "parent_phone": "01234569",
+        "parent_address": "12, Fadipe Street",
+        "session": "2024/2025",
+        "term": "First Term"
+    },
+    {
+        "student_name": "Bala",
+        "age": 12,
+        "reg_number": "ICY/2025/005",
+        "parent_name": "Mr and Mrs Muhammed",
+        "parent_phone": "090936555887",
+        "parent_address": "9, Oguntolu Stree, Somolu, Lagos",
+        "session": "2024/2025",
+        "term": "First Term"
+    }
+]

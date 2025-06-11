@@ -1,0 +1,182 @@
+[
+    {
+        "student_name": "Adams",
+        "total_score": 409,
+        "results": [
+            {
+                "Subject": "English",
+                "CA1": 15,
+                "CA2": 13,
+                "Exam": 44,
+                "Final": 72,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Math",
+                "CA1": 10,
+                "CA2": 10,
+                "Exam": 56,
+                "Final": 76,
+                "Grade": "A",
+                "Remark": "Excellent"
+            },
+            {
+                "Subject": "Econ",
+                "CA1": 12,
+                "CA2": 10,
+                "Exam": 40,
+                "Final": 62,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Bio",
+                "CA1": 19,
+                "CA2": 13,
+                "Exam": 33,
+                "Final": 65,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Chem",
+                "CA1": 11,
+                "CA2": 11,
+                "Exam": 45,
+                "Final": 67,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Phy",
+                "CA1": 13,
+                "CA2": 15,
+                "Exam": 39,
+                "Final": 67,
+                "Grade": "B",
+                "Remark": "Very Good"
+            }
+        ]
+    },
+    {
+        "student_name": "Ngozi",
+        "total_score": 409,
+        "results": [
+            {
+                "Subject": "English",
+                "CA1": 15,
+                "CA2": 13,
+                "Exam": 44,
+                "Final": 72,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Math",
+                "CA1": 10,
+                "CA2": 10,
+                "Exam": 56,
+                "Final": 76,
+                "Grade": "A",
+                "Remark": "Excellent"
+            },
+            {
+                "Subject": "Econ",
+                "CA1": 12,
+                "CA2": 10,
+                "Exam": 40,
+                "Final": 62,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Bio",
+                "CA1": 19,
+                "CA2": 13,
+                "Exam": 33,
+                "Final": 65,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Chem",
+                "CA1": 11,
+                "CA2": 11,
+                "Exam": 45,
+                "Final": 67,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Phy",
+                "CA1": 13,
+                "CA2": 15,
+                "Exam": 39,
+                "Final": 67,
+                "Grade": "B",
+                "Remark": "Very Good"
+            }
+        ]
+    },
+    {
+        "student_name": "Bala",
+        "total_score": 409,
+        "results": [
+            {
+                "Subject": "English",
+                "CA1": 15,
+                "CA2": 13,
+                "Exam": 44,
+                "Final": 72,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Math",
+                "CA1": 10,
+                "CA2": 10,
+                "Exam": 56,
+                "Final": 76,
+                "Grade": "A",
+                "Remark": "Excellent"
+            },
+            {
+                "Subject": "Econ",
+                "CA1": 12,
+                "CA2": 10,
+                "Exam": 40,
+                "Final": 62,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Bio",
+                "CA1": 19,
+                "CA2": 13,
+                "Exam": 33,
+                "Final": 65,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Chem",
+                "CA1": 11,
+                "CA2": 11,
+                "Exam": 45,
+                "Final": 67,
+                "Grade": "B",
+                "Remark": "Very Good"
+            },
+            {
+                "Subject": "Phy",
+                "CA1": 13,
+                "CA2": 15,
+                "Exam": 39,
+                "Final": 67,
+                "Grade": "B",
+                "Remark": "Very Good"
+            }
+        ]
+    }
+]
