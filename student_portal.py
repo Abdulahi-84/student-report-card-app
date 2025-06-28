@@ -587,7 +587,7 @@ def teacher_portal():
                                 new_student_id = max_id + 1
                                 st.session_state.students_data.append({
                                     "id": new_student_id,
-                                    "username": student_name_input.strip(),
+                                    "username": new_student_username,
                                     "password": "123456"
                                 })
                                 save_data(st.session_state.students_data, STUDENTS_FILE)
@@ -598,9 +598,6 @@ def teacher_portal():
                     save_data(st.session_state.student_profiles_data, STUDENT_PROFILES_FILE)
                     st.rerun()
             
-            # IMPORTANT: Ensure the lines below are correctly indented.
-            # The 'if delete_profile_button_clicked:' block starts here.
-            # The 'if st.session_state.get(...)' block starts at line 720 (approx).
             if delete_profile_button_clicked: 
                 # Using st.session_state to track confirmation state
                 if st.session_state.get('confirm_delete_profile_step', False) and st.session_state.get('confirm_delete_student_name') == selected_student_for_profile:
@@ -611,12 +608,12 @@ def teacher_portal():
                     del st.session_state['confirm_delete_profile_step'] # Reset confirmation
                     del st.session_state['confirm_delete_student_name'] # Reset confirmation
                     st.rerun()
-                else: # This 'else' aligns with the 'if' above it
+                else: 
                     # First click asks for confirmation
                     st.warning(f"Are you sure you want to delete {selected_student_for_profile}'s profile? Click 'Delete Profile' again to confirm.")
                     st.session_state['confirm_delete_profile_step'] = True
                     st.session_state['confirm_delete_student_name'] = selected_student_for_profile # Store student name for confirmation
-                    st.rerun() # Rerun to show the confirmation message immediately
+                    st.rerun() 
 
 
         st.markdown("---")
@@ -768,14 +765,21 @@ def student_portal():
             st.dataframe(results_df, hide_index=True, use_container_width=True)
 
             st.subheader("Download Report Card")
-            pdf_output = generate_report_card_pdf(student_name, results_df, total_score_student, rank, student_profile)
-            
-            st.download_button(
-                label="Download as PDF",
-                data=bytes(pdf_output.output(dest='S')),
-                file_name=f"{student_name}_Report_Card.pdf",
-                mime="application/pdf"
-            )
+            # --- Potentially problematic line with try-except for more robust error reporting ---
+            try:
+                pdf_output = generate_report_card_pdf(student_name, results_df, total_score_student, rank, student_profile)
+                st.download_button(
+                    label="Download as PDF",
+                    data=bytes(pdf_output.output(dest='S')), # Line 775
+                    file_name=f"{student_name}_Report_Card.pdf",
+                    mime="application/pdf"
+                )
+            except Exception as e:
+                st.error(f"Error generating PDF: {e}")
+                st.info("Please check if all required images are in the 'assets' folder and are valid PNGs.")
+                st.exception(e) # Show full traceback in Streamlit
+
+
         else:
             st.info("No report card data available for you yet. Please check back later.")
 
@@ -790,7 +794,7 @@ class PDF(FPDF):
             try:
                 self.image(logo_path, x=10, y=8, w=25)
             except Exception as e:
-                print(f"Warning: Could not load logo image for PDF: {e}") # For debugging in console
+                print(f"Warning: Could not load logo image for PDF at {logo_path}: {e}") # For debugging in console
         
         self.set_font("Arial", "B", 14)
         self.cell(0, 10, "IGBOBI COLLEGE YABA", ln=True, align="C")
@@ -817,7 +821,7 @@ def generate_report_card_pdf(student_name, results_df, total_score, rank, studen
         try:
             pdf.image(photo_path, x=170, y=8, w=25)
         except Exception as e:
-            # print(f"Warning: Could not embed student photo in PDF: {e}") # For debugging in console
+            print(f"Warning: Could not embed student photo in PDF at {photo_path}: {e}") # For debugging in console
             pass # Suppress warning in PDF generation if image fails
 
     pdf.set_font("Arial", "B", 12)
@@ -906,7 +910,7 @@ def generate_report_card_pdf(student_name, results_df, total_score, rank, studen
         try:
             pdf.image(class_teacher_sig_path, x=x1, y=signature_y_pos, w=sig_img_width, h=sig_img_height)
         except Exception as e:
-            print(f"Warning: Could not embed Class Teacher signature: {e}")
+            print(f"Warning: Could not embed Class Teacher signature from {class_teacher_sig_path}: {e}")
     pdf.set_y(signature_y_pos + sig_img_height + 2) # Move y down for text
     pdf.set_x(x1)
     pdf.set_font("Arial", "B", 9)
@@ -920,7 +924,7 @@ def generate_report_card_pdf(student_name, results_df, total_score, rank, studen
         try:
             pdf.image(hod_sig_path, x=x2, y=signature_y_pos, w=sig_img_width, h=sig_img_height)
         except Exception as e:
-            print(f"Warning: Could not embed HOD signature: {e}")
+            print(f"Warning: Could not embed HOD signature from {hod_sig_path}: {e}")
     pdf.set_y(signature_y_pos + sig_img_height + 2)
     pdf.set_x(x2)
     pdf.set_font("Arial", "B", 9)
@@ -934,7 +938,7 @@ def generate_report_card_pdf(student_name, results_df, total_score, rank, studen
         try:
             pdf.image(principal_sig_path, x=x3, y=signature_y_pos, w=sig_img_width, h=sig_img_height)
         except Exception as e:
-            print(f"Warning: Could not embed Principal signature: {e}")
+            print(f"Warning: Could not embed Principal signature from {principal_sig_path}: {e}")
     pdf.set_y(signature_y_pos + sig_img_height + 2)
     pdf.set_x(x3)
     pdf.set_font("Arial", "B", 9)
