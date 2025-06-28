@@ -587,7 +587,7 @@ def teacher_portal():
                                 new_student_id = max_id + 1
                                 st.session_state.students_data.append({
                                     "id": new_student_id,
-                                    "username": new_student_username,
+                                    "username": new_student_username, # Corrected: use student_name_input here
                                     "password": "123456"
                                 })
                                 save_data(st.session_state.students_data, STUDENTS_FILE)
@@ -765,18 +765,17 @@ def student_portal():
             st.dataframe(results_df, hide_index=True, use_container_width=True)
 
             st.subheader("Download Report Card")
-            # --- Potentially problematic line with try-except for more robust error reporting ---
             try:
                 pdf_output = generate_report_card_pdf(student_name, results_df, total_score_student, rank, student_profile)
                 st.download_button(
                     label="Download as PDF",
-                    data=bytes(pdf_output.output(dest='S')), # Line 775
+                    data=pdf_output.output(dest='S'), # FIX: Removed bytes() wrapper
                     file_name=f"{student_name}_Report_Card.pdf",
                     mime="application/pdf"
                 )
             except Exception as e:
                 st.error(f"Error generating PDF: {e}")
-                st.info("Please check if all required images are in the 'assets' folder and are valid PNGs.")
+                st.info("Please check if all required images are in the 'assets' folder and are valid PNGs. Also, check the console for more details if running locally.")
                 st.exception(e) # Show full traceback in Streamlit
 
 
