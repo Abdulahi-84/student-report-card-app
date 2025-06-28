@@ -493,30 +493,39 @@ def teacher_portal():
         with st.form("student_profile_form", clear_on_submit=False):
             st.markdown("### Student Profile Details")
             
-            # Pre-fill if editing an existing profile
-            default_name = current_profile['student_name'] if current_profile else ""
-            default_age = current_profile['age'] if current_profile else 0 # Changed default to 0 for number_input
-            default_reg_number = current_profile['reg_number'] if current_profile else ""
-            default_parent_name = current_profile['parent_name'] if current_profile else ""
-            default_parent_phone = current_profile['parent_phone'] if current_profile else ""
-            default_parent_address = current_profile['parent_address'] if current_profile else ""
-            
-            # Set default index for selectboxes carefully
-            default_session_index = SESSIONS.index(current_profile['session']) if current_profile and current_profile['session'] in SESSIONS else 0
-            default_term_index = TERMS.index(current_profile['term']) if current_profile and current_profile['term'] in TERMS else 0
-            
-            # If no student is selected, ensure the first item is selected by default for new entry
-            if not selected_student_for_profile:
-                default_name = ""
-                default_age = 0
-                default_reg_number = ""
-                default_parent_name = ""
-                default_parent_phone = ""
-                default_parent_address = ""
-                default_session_index = 0
-                default_term_index = 0
+            # Initialize with sensible defaults for new entry or existing profile
+            default_name = ""
+            default_age = 0
+            default_reg_number = ""
+            default_parent_name = ""
+            default_parent_phone = ""
+            default_parent_address = ""
+            default_session_index = 0
+            default_term_index = 0
 
+            if current_profile:
+                default_name = current_profile['student_name']
+                # Ensure age is a valid number, default to 0 if invalid or None
+                default_age = current_profile.get('age')
+                if not isinstance(default_age, (int, float)):
+                    default_age = 0
+                default_age = int(max(0, min(100, default_age))) # Ensure within min/max
 
+                default_reg_number = current_profile['reg_number']
+                default_parent_name = current_profile['parent_name']
+                default_parent_phone = current_profile['parent_phone']
+                default_parent_address = current_profile['parent_address']
+                
+                # Set default index for selectboxes carefully
+                try:
+                    default_session_index = SESSIONS.index(current_profile['session'])
+                except ValueError:
+                    default_session_index = 0 # Fallback if session not in list
+                try:
+                    default_term_index = TERMS.index(current_profile['term'])
+                except ValueError:
+                    default_term_index = 0 # Fallback if term not in list
+            
             # Input fields
             student_name_input = st.text_input("Student Name (Must match name in results file)", value=default_name, disabled=bool(selected_student_for_profile), key="profile_student_name")
             age_input = st.number_input("Age", min_value=0, max_value=100, value=default_age, key="profile_age")
@@ -529,6 +538,7 @@ def teacher_portal():
 
             col1, col2 = st.columns(2)
             with col1:
+                # --- Added submit button ---
                 submit_profile_button = st.form_submit_button("Save Profile")
             with col2:
                 # Only show delete button if a profile is selected
@@ -590,14 +600,21 @@ def teacher_portal():
             
             if delete_profile_button_clicked: # Check if the delete button was clicked
                 # Confirmation for deletion
-                confirm_delete = st.empty()
-                if confirm_delete.button(f"Click again to CONFIRM Delete {selected_student_for_profile}'s Profile", key="confirm_delete_profile"):
+                # Using st.session_state to track confirmation state
+                if st.session_state.get('confirm_delete_profile_step', False) and st.session_state.get('confirm_delete_student_name') == selected_student_for_profile:
+                    # Second click confirms deletion
                     st.session_state.student_profiles_data = [p for p in st.session_state.student_profiles_data if p['student_name'] != selected_student_for_profile]
                     save_data(st.session_state.student_profiles_data, STUDENT_PROFILES_FILE)
                     st.success(f"Profile for {selected_student_for_profile} deleted successfully.")
+                    del st.session_state['confirm_delete_profile_step'] # Reset confirmation
+                    del st.session_state['confirm_delete_student_name'] # Reset confirmation
                     st.rerun()
                 else:
-                    st.warning(f"Are you sure you want to delete {selected_student_for_profile}'s profile? This action cannot be undone.")
+                    # First click asks for confirmation
+                    st.warning(f"Are you sure you want to delete {selected_student_for_profile}'s profile? Click 'Delete Profile' again to confirm.")
+                    st.session_state['confirm_delete_profile_step'] = True
+                    st.session_state['confirm_delete_student_name'] = selected_student_for_profile # Store student name for confirmation
+                    st.rerun() # Rerun to show the confirmation message immediately
 
 
         st.markdown("---")
@@ -698,248 +715,7 @@ def student_portal():
         st.markdown("### Your Profile Details")
         if student_profile:
             st.write(f"**Name:** {student_profile.get('student_name', 'N/A')}")
-            st.write(f"**Age:** {student_profile.get('age', 'N/A')}")
-            st.write(f"**Registration No.:** {student_profile.get('reg_number', 'N/A')}")
-            st.write(f"**Academic Session:** {student_profile.get('session', 'N/A')}")
-            st.write(f"**Academic Term:** {student_profile.get('term', 'N/A')}")
-            st.write(f"**Parent/Guardian:** {student_profile.get('parent_name', 'N/A')}")
-            st.write(f"**Parent Phone:** {student_profile.get('parent_phone', 'N/A')}")
-            st.write(f"**Parent Address:** {student_profile.get('parent_address', 'N/A')}")
-            
-            image_placeholder = st.empty()
-            
-            # Use relative path for deployment
-            script_dir = os.path.dirname(__file__)
-            photo_path = os.path.join(script_dir, "assets", f"{student_name} Image.png")
-            
-            if os.path.exists(photo_path):
-                try:
-                    image_placeholder.image(photo_path, caption=f"{student_name}'s Photo", width=150)
-                except Exception as e:
-                    image_placeholder.warning(f"Could not load photo: {e}")
-            else:
-                image_placeholder.info(f"No photo found for {student_name} in the 'assets' folder.")
-        else:
-            st.info("Your profile details are not yet available. Please ask your teacher to update them.")
+            # Safely display age
+            display_age = student_profile.get('age', 'N/A')
+            if display_age == "" or display_age is None:
 
-    with col_results:
-        st.markdown("### Your Results")
-        if student_record:
-            results_df = pd.DataFrame(student_record['results'])
-            total_score_student = results_df['Final'].sum()
-
-            all_student_totals = {r['student_name']: r['total_score'] for r in st.session_state.results_data if 'total_score' in r and isinstance(r['total_score'], (int, float))}
-            
-            sorted_students = sorted(all_student_totals.items(), key=lambda x: x[1], reverse=True)
-            
-            rank = "N/A"
-            for i, (name, score) in enumerate(sorted_students):
-                if name == student_name:
-                    rank = ordinal(i + 1)
-                    break
-            
-            st.write(f"**Total Score:** {total_score_student}")
-            st.write(f"**Rank:** {rank} Position")
-
-            st.dataframe(results_df, hide_index=True, use_container_width=True)
-
-            st.subheader("Download Report Card")
-            pdf_output = generate_report_card_pdf(student_name, results_df, total_score_student, rank, student_profile)
-            
-            st.download_button(
-                label="Download as PDF",
-                data=bytes(pdf_output.output(dest='S')),
-                file_name=f"{student_name}_Report_Card.pdf",
-                mime="application/pdf"
-            )
-        else:
-            st.info("No report card data available for you yet. Please check back later.")
-
-
-# --- PDF Generation (Adapted from SR0-4.18.py) ---
-class PDF(FPDF):
-    def header(self):
-        # Use a path relative to the script's directory for deployment
-        script_dir = os.path.dirname(__file__)
-        logo_path = os.path.join(script_dir, "assets", "ICY.png")
-        if os.path.exists(logo_path):
-            try:
-                self.image(logo_path, x=10, y=8, w=25)
-            except Exception as e:
-                print(f"Warning: Could not load logo image for PDF: {e}") # For debugging in console
-        
-        self.set_font("Arial", "B", 14)
-        self.cell(0, 10, "IGBOBI COLLEGE YABA", ln=True, align="C")
-        self.set_font("Arial", "", 12)
-        self.cell(0, 10, "Igobobi College Road, Fadeyi, Lagos", ln=True, align="C")
-        self.ln(5)
-
-    def footer(self):
-        self.set_y(-15)
-        self.set_font("Arial", "I", 8)
-        self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="C")
-
-def generate_report_card_pdf(student_name, results_df, total_score, rank, student_profile=None):
-    pdf = PDF()
-    pdf.alias_nb_pages()
-    pdf.add_page()
-
-    # Get the directory of the current script for relative paths
-    script_dir = os.path.dirname(__file__) 
-
-    # Student Photo Path
-    photo_path = os.path.join(script_dir, "assets", f"{student_name} Image.png")
-    if os.path.exists(photo_path):
-        try:
-            pdf.image(photo_path, x=170, y=8, w=25)
-        except Exception as e:
-            # print(f"Warning: Could not embed student photo in PDF: {e}") # For debugging in console
-            pass # Suppress warning in PDF generation if image fails
-
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(40, 10, f"Student Name: {student_name}", ln=True)
-    
-    # Add profile details to PDF
-    pdf.set_font("Arial", "", 11)
-    if student_profile:
-        pdf.cell(0, 7, f"Age: {student_profile.get('age', 'N/A')}", ln=True)
-        pdf.cell(0, 7, f"Registration No.: {student_profile.get('reg_number', 'N/A')}", ln=True)
-        pdf.cell(0, 7, f"Academic Session: {student_profile.get('session', 'N/A')}", ln=True)
-        pdf.cell(0, 7, f"Academic Term: {student_profile.get('term', 'N/A')}", ln=True)
-        pdf.cell(0, 7, f"Parent/Guardian: {student_profile.get('parent_name', 'N/A')}", ln=True)
-        pdf.cell(0, 7, f"Parent Phone: {student_profile.get('parent_phone', 'N/A')}", ln=True)
-        pdf.cell(0, 7, f"Parent Address: {student_profile.get('parent_address', 'N/A')}", ln=True)
-    else:
-        pdf.cell(0, 7, "Profile Details: Not available", ln=True)
-        
-    pdf.ln(3) # Small line break
-
-    pdf.set_font("Arial", "B", 11)
-    pdf.cell(40, 10, f"Total Score: {total_score}", ln=True)
-    pdf.cell(40, 10, f"Rank: {rank} Position", ln=True)
-    pdf.ln(5)
-
-    headers = results_df.columns.tolist()
-    
-    # Calculate column widths more dynamically, with a minimum size
-    col_widths = []
-    for header in headers:
-        text_width = pdf.get_string_width(str(header))
-        col_widths.append(max(20, text_width + 10)) # Minimum 20 units, plus padding
-
-    # Adjust if total width exceeds page width
-    total_table_width = sum(col_widths)
-    page_usable_width = pdf.w - pdf.l_margin - pdf.r_margin # Page width minus left/right margins
-    if total_table_width > page_usable_width:
-        scale_factor = page_usable_width / total_table_width
-        col_widths = [w * scale_factor for w in col_widths]
-
-
-    pdf.set_font("Arial", "B", 10)
-    for i, header in enumerate(headers):
-        pdf.cell(col_widths[i], 10, str(header), border=1, align="C")
-    pdf.ln()
-
-    pdf.set_font("Arial", "", 10)
-    for _, row in results_df.iterrows():
-        for i, val in enumerate(row.tolist()):
-            # Handle long text in cells if necessary, or just let fpdf truncate/wrap
-            pdf.cell(col_widths[i], 10, str(val), border=1, align="C")
-        pdf.ln()
-    
-    # --- Digital Signatures ---
-    pdf.ln(15) # Add some space after the table
-
-    signature_y_pos = pdf.get_y() # Get current Y position
-
-    # Define signature image paths using relative path
-    class_teacher_sig_path = os.path.join(script_dir, "assets", "class_teacher_signature.png")
-    hod_sig_path = os.path.join(script_dir, "assets", "hod_signature.png")
-    principal_sig_path = os.path.join(script_dir, "assets", "principal_signature.png")
-
-    # Signature image dimensions (adjust as needed)
-    sig_img_width = 30
-    sig_img_height = 15
-
-    # Signature text spacing
-    sig_text_ln = 5 # Line height for text below signature
-
-    # Calculate x positions for three signatures to be evenly spaced
-    # Assuming standard A4 (210mm wide), and margins of 10mm on each side (total 190mm usable width)
-    # This places them roughly centered and spread out
-    x1 = 20 # Left signature
-    x2 = pdf.w / 2 - (sig_img_width / 2) # Center signature
-    x3 = pdf.w - sig_img_width - 20 # Right signature
-
-    # Class Teacher Signature
-    pdf.set_x(x1)
-    if os.path.exists(class_teacher_sig_path):
-        try:
-            pdf.image(class_teacher_sig_path, x=x1, y=signature_y_pos, w=sig_img_width, h=sig_img_height)
-        except Exception as e:
-            print(f"Warning: Could not embed Class Teacher signature: {e}")
-    pdf.set_y(signature_y_pos + sig_img_height + 2) # Move y down for text
-    pdf.set_x(x1)
-    pdf.set_font("Arial", "B", 9)
-    pdf.cell(sig_img_width, sig_text_ln, "Class Teacher", 0, 0, 'C') # Text below signature
-
-
-    # HOD Signature
-    pdf.set_y(signature_y_pos) # Reset y for next signature
-    pdf.set_x(x2)
-    if os.path.exists(hod_sig_path):
-        try:
-            pdf.image(hod_sig_path, x=x2, y=signature_y_pos, w=sig_img_width, h=sig_img_height)
-        except Exception as e:
-            print(f"Warning: Could not embed HOD signature: {e}")
-    pdf.set_y(signature_y_pos + sig_img_height + 2)
-    pdf.set_x(x2)
-    pdf.set_font("Arial", "B", 9)
-    pdf.cell(sig_img_width, sig_text_ln, "HOD", 0, 0, 'C')
-
-
-    # Principal Signature
-    pdf.set_y(signature_y_pos) # Reset y for next signature
-    pdf.set_x(x3)
-    if os.path.exists(principal_sig_path):
-        try:
-            pdf.image(principal_sig_path, x=x3, y=signature_y_pos, w=sig_img_width, h=sig_img_height)
-        except Exception as e:
-            print(f"Warning: Could not embed Principal signature: {e}")
-    pdf.set_y(signature_y_pos + sig_img_height + 2)
-    pdf.set_x(x3)
-    pdf.set_font("Arial", "B", 9)
-    pdf.cell(sig_img_width, sig_text_ln, "Principal", 0, 1, 'C') # ln=1 to move to next line after last signature
-
-    
-    return pdf
-
-
-# --- Main Application Logic ---
-def main():
-    st.set_page_config(
-        page_title="Student Report Card Portal",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
-
-    apply_custom_css()
-    initialize_session_state()
-
-    if not st.session_state.logged_in:
-        st.sidebar.title("Login")
-        with st.sidebar.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            login_button = st.form_submit_button("Login")
-
-            if login_button:
-                authenticate_user(username, password)
-        st.info("Please login to access the portal.")
-    elif st.session_state.user_role == 'teacher':
-        teacher_portal()
-    elif st.session_state.user_role == 'student':
-        student_portal()
-
-if __name__ == "__main__":
-    main()
